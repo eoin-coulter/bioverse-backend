@@ -2,4 +2,7 @@ uvicorn
 fastapi
 openpyxl
 pandas
+numpy
 sqlalchemy>=1.4.16
+psycopg2-binary
+

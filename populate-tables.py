@@ -24,7 +24,7 @@ def excel_to_db(excel_file: str):
             df = pd.read_excel(xls, sheet_name=sheet_name)
             
             # Write the DataFrame to the corresponding table in the DB
-            df.to_sql(sheet_name, engine, if_exists='replace', index=False)
+            df.to_sql(sheet_name, engine, if_exists='append', index=False)
             print(f"Data from sheet '{sheet_name}' has been successfully inserted into the '{sheet_name}' table.")
         except Exception as e:
             print(f"An error occurred while processing sheet '{sheet_name}': {e}")

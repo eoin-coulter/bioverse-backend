@@ -32,4 +32,11 @@ CREATE TABLE IF NOT EXISTS answer (
     answer TEXT NOT NULL
 );
 
+INSERT INTO users (username, pword, is_admin)
+VALUES ('admin', 'admin', true);
+
+-- Inserting a test user
+INSERT INTO users (username, pword, is_admin)
+VALUES ('test', 'test', false);
+
 

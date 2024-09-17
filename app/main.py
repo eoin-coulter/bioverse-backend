@@ -2,7 +2,6 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from .database import engine,get_db
 from . import models, schemas  
-from .routes import router
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session  
 from typing import List
@@ -13,7 +12,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Replace with your frontend domain
+    allow_origins=["https://bioverse-frontend-lime.vercel.app","http://localhost:3000"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,13 +22,6 @@ app.add_middleware(
 # Create database tables if they don't exist
 models.Base.metadata.create_all(bind=engine)
 
-# Include routes
-app.include_router(router)
-
-# For debugging purposes
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the questionnaire API!"}
 
 # Signup endpoint
 @app.post("/signup/")
@@ -156,3 +148,86 @@ def submit_answers(submission: schemas.AnswerRes, db: Session = Depends(get_db))
     db.commit()
 
     return {"message": "Answers submitted successfully"}
+
+
+
+@app.get("/admin/users")
+def get_users_with_completed_questionnaires(db: Session = Depends(get_db)):
+    users = db.query(models.User).all()  # Get all users
+
+    response = []
+
+    for user in users:
+        # Fetch all distinct questionnaire IDs the user has started answering
+        questionnaires = db.query(models.Questionnaire.id).join(
+            models.QuestionnaireJunction, models.QuestionnaireJunction.questionnaire_id == models.Questionnaire.id
+        ).join(
+            models.Answer, models.Answer.question_id == models.QuestionnaireJunction.question_id
+        ).filter(
+            models.Answer.user_id == user.id
+        ).distinct().all()
+
+        completed_questionnaires_count = 0
+
+        # Check for each questionnaire if it's completed
+        for questionnaire in questionnaires:
+            # Count the number of questions in the questionnaire
+            total_questions = db.query(models.QuestionnaireJunction).filter(
+                models.QuestionnaireJunction.questionnaire_id == questionnaire.id
+            ).count()
+
+            # Count the number of answers the user has provided for that questionnaire
+            total_answers = db.query(models.Answer).join(
+                models.QuestionnaireJunction, models.Answer.question_id == models.QuestionnaireJunction.question_id
+            ).filter(
+                models.Answer.user_id == user.id,
+                models.QuestionnaireJunction.questionnaire_id == questionnaire.id
+            ).count()
+
+            # Only count the questionnaire as "completed" if all questions are answered
+            if total_questions == total_answers:
+                completed_questionnaires_count += 1
+
+        response.append({
+            "id": user.id,
+            "username": user.username,
+            "completed_questionnaires": completed_questionnaires_count
+        })
+
+    return response
+
+@app.get("/admin/user/{user_id}/questionnaires")
+def get_user_questionnaires_and_answers(user_id: int, db: Session = Depends(get_db)):
+    # Fetch all distinct questionnaires that the user has answered questions for
+    questionnaires = db.query(models.Questionnaire).join(
+        models.QuestionnaireJunction, models.QuestionnaireJunction.questionnaire_id == models.Questionnaire.id
+    ).join(
+        models.Answer, models.Answer.question_id == models.QuestionnaireJunction.question_id
+    ).filter(
+        models.Answer.user_id == user_id
+    ).distinct().all()
+
+    response = []
+
+    for questionnaire in questionnaires:
+        # Fetch questions and corresponding answers for each questionnaire
+        questions_and_answers = db.query(models.Question, models.Answer).join(
+            models.Answer, models.Answer.question_id == models.Question.id
+        ).filter(
+            models.Answer.user_id == user_id,
+            models.QuestionnaireJunction.questionnaire_id == questionnaire.id
+        ).all()
+
+        # Format the question and answer pairs
+        qna = [
+            {"question": question.question.get('question'), "answer": answer.answer}
+            for question, answer in questions_and_answers
+        ]
+
+        # Append to the response
+        response.append({
+            "questionnaire_name": questionnaire.title,
+            "qna": qna
+        })
+
+    return response

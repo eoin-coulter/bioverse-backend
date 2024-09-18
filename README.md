@@ -12,7 +12,6 @@ This is a full-stack web application where users can answer questionnaires and a
   - [Installation and Running](#backend-installation-and-running)
 - [Docker Setup](#docker-setup)
 
-
 ---
 
 ## Frontend
@@ -27,7 +26,6 @@ This is a full-stack web application where users can answer questionnaires and a
 ### Frontend Installation and Running
 
 1. Clone the repository:
-
 2. Install dependencies:
 
    \`\`\`bash
@@ -55,7 +53,7 @@ This is a full-stack web application where users can answer questionnaires and a
 The frontend is deployed on **Vercel** and can be accessed at:
 [[[https://your-vercel-url.vercel.app](https://your-vercel-url.vercel.app)
 ](https://bioverse-frontend-lime.vercel.app/)](https://bioverse-frontend-lime.vercel.app/)
----
+------------------------------------------------------------------------------------------
 
 ## Backend
 
@@ -70,21 +68,29 @@ The frontend is deployed on **Vercel** and can be accessed at:
 ### Backend Installation and Running
 
 1. Clone the repository:
-
 2. run init.sh script
 3. Create and set up the PostgreSQL database:
 
    - Start PostgreSQL service.
    - Create a new database and user as outlined in the steps above.
-
 4. The API will be available at \`http://localhost:8000\`.
+
+---
 
 ### Deployed Backend
 
 The backend is deployed on an EC2 instance. You can access the API at:
-\`18.201.199.226:8000\`
+\`www.bioverseapp.com`
 
----
+There is an admin user and test user added to the db but additional users can be created.
+
+admin
+
+username: admin, password: admin
+
+test user
+
+username: test, password: test
 
 ## Docker Setup
 
@@ -95,11 +101,8 @@ The project uses **Docker Compose** to manage back-end services.
 
 ---
 
-
-
 ## License
 
 This project is licensed under the MIT License. See the \`LICENSE\` file for details.
 
 ---
-
